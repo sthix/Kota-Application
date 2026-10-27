@@ -1,0 +1,880 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Answer Before Email — an application to Kota</title>
+<meta name="description" content="A rebuilt Kota benefits benchmark with one change: the result arrives before the email. An interactive application.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0a0a0a; --ink-2:#404040; --muted:#737373; --line:#e6e6e6; --soft:#f5f5f5;
+  --purple:#7544e9; --purple-ink:#4b22b8; --lav:#f1ecfe; --lav-2:#e4dafd;
+  --green:#15803d; --green-bg:#e9f7ee; --amber:#a16207; --amber-bg:#fdf4dc; --red:#b42318; --red-bg:#fdecea;
+  --sans:"Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* kota.io tokens — see kota-DESIGN.md */
+  --oat:#fdfaf6; --linen:#f9f5f0; --rule:#efe8de; --rule-nav:#f5efe8; --violet:#7546d5; --violet-deep:#4b1f85;
+  --wash:#eeebfa; --graphite:#222222; --pencil:#333333; --chalk:#fbfaf2; --pebble:#c6c6c1; --frame:#d9d9d9;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--oat);color:var(--ink);font-family:var(--sans);font-size:16px;font-weight:300;line-height:1.5;-webkit-font-smoothing:antialiased}
+strong,b{font-weight:600}
+[id]{scroll-margin-top:96px}
+a{color:inherit}
+button,input,select{font:inherit;color:inherit}
+.wrap{max-width:1340px;margin:0 auto;padding:0 60px}
+@media (max-width:900px){.wrap{padding:0 24px}}
+@media (max-width:640px){.wrap{padding:0 16px}}
+
+/* ---------- application chrome (kota.io style) ---------- */
+.announce{background:var(--violet);color:#fff;font-size:14px;line-height:21px;text-align:center;padding:6px 16px}
+.announce a{color:#fff;text-decoration:none}
+.topbar{position:sticky;top:0;z-index:40;padding:12px 0 0}
+.nav{max-width:1264px;margin:0 auto;height:68px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 14px 0 22px;background:var(--linen);border:1px solid var(--rule-nav);border-radius:16px}
+@media (max-width:1300px){.topbar{padding:12px 24px 0}}
+@media (max-width:640px){.topbar{padding:10px 12px 0}}
+.who{font-weight:600;font-size:17px;letter-spacing:-.01em;white-space:nowrap;display:flex;align-items:center;gap:10px}
+.who span{font-weight:300;color:var(--pencil)}
+@media (max-width:520px){.who span{display:none}}
+.nav nav{display:flex;gap:2px}
+.nav nav a{text-decoration:none;color:var(--graphite);font-size:16px;font-weight:500;padding:8px 14px;border-radius:100px}
+.nav nav a:hover{background:var(--rule)}
+@media (max-width:980px){.nav nav{display:none}}
+.btn-nav{background:#000;color:#fff;border:1px solid rgba(198,198,193,.4);border-radius:10px;padding:8px 12px;font-size:16px;font-weight:400;text-decoration:none;white-space:nowrap}
+
+.hero{padding:0 0 64px}
+.hero-sheet{margin:-80px auto 0;max-width:1318px;background:rgba(249,245,240,.5);border:1px solid rgba(154,154,154,.5);border-top:0;border-radius:0 0 14px 14px;padding:180px 60px 96px}
+.hero-wash{background:rgba(238,235,250,.5);padding:0 12px 12px}
+@media (max-width:640px){.hero-sheet{padding:140px 16px 56px}.hero-wash{padding:0 8px 8px}}
+.eyebrow{font-size:12px;line-height:18px;font-weight:600;text-transform:uppercase;color:var(--pencil);letter-spacing:.02em}
+.hero h1{font-weight:600;font-size:48px;line-height:48px;letter-spacing:-.02em;margin:0;max-width:16ch}
+.hero h1 em{font-style:normal;color:var(--violet)}
+@media (max-width:640px){.hero h1{font-size:40px;line-height:42px}}
+.hero .lede{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:28px;max-width:900px}
+.hero .lede p{margin:0;font-size:18px;line-height:27px;color:var(--ink)}
+@media (max-width:760px){.hero .lede{grid-template-columns:1fr;gap:14px}.hero .lede p{font-size:16px;line-height:24px}}
+.cta-row{display:flex;gap:12px;margin-top:32px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:4px;border:1px solid transparent;border-radius:12px;padding:10px 20px;min-height:46px;font-size:16px;font-weight:400;cursor:pointer;text-decoration:none}
+.btn-violet{background:var(--violet);border-color:var(--violet);color:#fff}
+.btn-violet:hover{background:#6434c4;border-color:#6434c4}
+.btn-ink{background:#000;color:#fff;border-color:#000;border-radius:10px}
+.btn-ghost{background:transparent;color:var(--pencil);border-color:var(--pebble);border-radius:8px}
+.btn-ghost:hover{border-color:#000}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:56px;align-items:center}
+@media (max-width:1100px){.hero-grid{grid-template-columns:1fr}.hero-viz{display:none}}
+.hero-viz{position:relative;border:2px dashed rgba(117,70,213,.55);border-radius:120px;padding:56px 36px}
+.hero-viz .dot{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--violet);box-shadow:0 0 0 4px var(--wash)}
+.hero-viz .dot.d-t{top:-6px;left:50%;margin-left:-5px}.hero-viz .dot.d-b{bottom:-6px;left:50%;margin-left:-5px}
+.hero-viz .dot.d-l{left:-6px;top:50%;margin-top:-5px}.hero-viz .dot.d-r{right:-6px;top:50%;margin-top:-5px}
+.pv{background:#fff;border:1px solid var(--frame);border-radius:10px;padding:20px}
+.pv .live{margin-bottom:10px}
+.pv-top{display:flex;align-items:baseline;gap:10px}
+.pv-top b{font-size:44px;font-weight:600;letter-spacing:-.03em;line-height:1}
+.pv-top span{font-size:16px;color:var(--pencil)}
+.pv-top em{font-style:normal;color:var(--violet);font-weight:600;font-size:22px}
+.pv ul{list-style:none;margin:16px 0 0;padding:0;font-size:14px}
+.pv li{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid #ebebed}
+.pv li span:last-child{font-weight:600;white-space:nowrap}
+.pv .q{margin-top:14px;background:var(--violet);color:#fff;border-radius:12px;text-align:center;padding:10px;font-size:15px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:40px}
+.chip-k{display:inline-flex;background:var(--linen);border:1px solid rgba(0,0,0,.15);border-radius:9px;padding:6px}
+.chip-k span{background:var(--wash);color:var(--violet);font-size:13px;line-height:19.5px;font-weight:600;padding:6px;border-radius:5px}
+
+section.block{padding:96px 0}
+@media (max-width:640px){section.block{padding:56px 0}}
+.sec-head{margin-bottom:40px;max-width:640px}
+.sec-head .eyebrow{margin-bottom:16px}
+.sec-head h2{font-weight:600;font-size:38px;line-height:43.5px;letter-spacing:-.01em;margin:0 0 16px}
+.sec-head p{margin:0;font-size:18px;line-height:27px;color:var(--ink)}
+@media (max-width:640px){.sec-head h2{font-size:32px;line-height:37px}}
+section.dark{background:var(--graphite);color:var(--chalk)}
+section.dark .eyebrow{color:#fff;text-align:center}
+section.dark .sec-head{margin:0 auto 56px;text-align:center}
+section.dark .sec-head h2{font-size:48px;line-height:56px;color:var(--chalk)}
+section.dark .sec-head p{color:rgba(251,250,242,.8)}
+@media (max-width:640px){section.dark .sec-head h2{font-size:34px;line-height:40px}}
+
+/* ---------- before / after switch ---------- */
+.switch{display:inline-flex;background:var(--linen);border:1px solid var(--rule);border-radius:12px;padding:4px;gap:4px;margin-bottom:20px;max-width:100%}
+.switch button{border:1px solid transparent;background:transparent;border-radius:8px;padding:9px 16px;font-weight:500;font-size:15px;cursor:pointer;color:var(--pencil);white-space:nowrap}
+.switch button:hover{background:var(--rule)}
+.switch button[aria-pressed=true]{background:#fff;color:#000;border-color:var(--rule)}
+.switch button .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:1px;background:var(--pebble)}
+.switch button[data-mode=after] .dot{background:var(--violet)}
+@media (max-width:480px){.switch button{padding:9px 10px;font-size:14px}}
+
+/* browser frame: product screenshot on paper */
+.frame{border:1px solid var(--frame);border-radius:10px;overflow:hidden;background:#fff}
+.frame-bar{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--linen);border-bottom:1px solid var(--rule)}
+.frame-bar .lights{display:flex;gap:6px}
+.frame-bar .lights i{width:10px;height:10px;border-radius:50%;background:var(--rule);display:block}
+.frame-bar .url{flex:1;min-width:0;background:#fff;border:1px solid var(--rule);border-radius:8px;padding:5px 10px;font-size:13px;color:var(--pencil);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.frame-bar .tag{font-size:13px;font-weight:600;color:var(--violet);background:var(--wash);padding:4px 8px;border-radius:5px;white-space:nowrap}
+@media (max-width:520px){.frame-bar .tag{display:none}}
+
+/* ---------- Kota recreation ---------- */
+.kota{background:linear-gradient(180deg,#f3eefe 0,#fbf9ff 340px,#fff 620px);padding:0 0 56px;position:relative}
+.k-nav{display:flex;align-items:center;justify-content:space-between;padding:18px 28px}
+.k-logo{display:flex;align-items:center;gap:7px;font-weight:700;font-size:21px;letter-spacing:-.02em}
+.k-links{display:flex;gap:26px;font-size:14px;font-weight:500;color:var(--ink-2)}
+.k-links .on{color:var(--ink);box-shadow:inset 0 -2px 0 var(--purple);padding-bottom:4px}
+.k-sign{font-size:14px;font-weight:600}
+@media (max-width:760px){.k-links{display:none}}
+.k-head{text-align:center;padding:28px 20px 8px}
+.k-head h3{margin:0;font-size:clamp(24px,3.4vw,34px);font-weight:700;letter-spacing:-.02em}
+.k-head p{margin:10px auto 0;color:var(--muted);font-size:16px;max-width:52ch}
+.k-head .ins{font-size:13px;margin-top:10px}
+.k-head .ins a{color:var(--purple);text-decoration:none}
+
+.k-body{display:grid;grid-template-columns:minmax(0,600px);justify-content:center;gap:28px;padding:28px 28px 0;transition:all .35s ease}
+.k-body.after{grid-template-columns:minmax(0,560px) minmax(0,400px)}
+@media (max-width:980px){.k-body.after{grid-template-columns:minmax(0,600px)}}
+@media (max-width:520px){.k-body{padding:20px 12px 0}}
+
+.k-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 20px}
+.k-label{display:block;font-size:14px;font-weight:600;margin-bottom:8px}
+.k-seg{display:grid;grid-template-columns:1fr 1fr;background:var(--soft);border-radius:12px;padding:4px}
+.k-seg button{border:0;background:transparent;border-radius:9px;padding:7px 12px;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer}
+.k-seg button[aria-pressed=true]{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.k-row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+@media (max-width:480px){.k-row2{grid-template-columns:1fr}}
+.k-input,.k-select{width:100%;height:44px;border:1px solid var(--line);border-radius:10px;padding:0 12px;background:#fff;font-size:14px}
+.k-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23737373' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.k-input:focus,.k-select:focus{outline:2px solid var(--lav-2);border-color:var(--purple)}
+.k-hr{height:1px;background:var(--line);margin:20px 0}
+.k-h4{font-size:19px;font-weight:700;margin:0;letter-spacing:-.01em}
+.k-sub{font-size:13px;color:var(--muted);margin:2px 0 10px}
+.k-ben{border-bottom:1px solid #f0f0f0}
+.k-ben:last-of-type{border-bottom:0}
+.k-ben-top{display:flex;align-items:center;justify-content:space-between;padding:12px 0;gap:12px}
+.k-ben-name{font-weight:500;font-size:15px}
+.k-ben-detail{display:none;grid-template-columns:1fr 1fr;gap:10px;padding:0 0 14px}
+.k-ben.open .k-ben-detail{display:grid}
+.k-ben-detail label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+@media (max-width:480px){.k-ben-detail{grid-template-columns:1fr}}
+.tog{position:relative;width:36px;height:20px;border-radius:999px;background:#e6e6e6;border:0;cursor:pointer;flex-shrink:0;transition:background .2s}
+.tog::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .2s}
+.tog[aria-checked=true]{background:var(--purple)}
+.tog[aria-checked=true]::after{transform:translateX(16px)}
+.k-email{margin-top:6px}
+.k-check{display:flex;gap:10px;align-items:flex-start;font-size:13px;font-weight:600;margin-top:12px}
+.k-check input{margin-top:3px;accent-color:var(--purple)}
+.k-fine{font-size:12px;color:var(--muted);margin:10px 0 0}
+.k-fine a{color:var(--purple)}
+.k-submit{display:block;width:100%;margin-top:20px;border:0;border-radius:12px;background:var(--purple);color:#fff;font-weight:600;font-size:17px;padding:18px;cursor:pointer;box-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1)}
+.k-submit:hover{background:#6634dd}
+.k-err{color:var(--red);font-size:13px;margin-top:6px;display:none}
+.before-only{}
+.k-body.after .before-only{display:none}
+
+/* results panel (my change) */
+.res{display:none;align-self:start;position:sticky;top:76px}
+.k-body.after .res{display:block;animation:rise .45s ease}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media (max-width:980px){.res{position:static}}
+.res .k-card{padding:22px}
+.res-top{display:flex;gap:18px;align-items:center}
+.ring{position:relative;width:112px;height:112px;flex-shrink:0}
+.ring svg{transform:rotate(-90deg)}
+.ring .val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .val b{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.ring .val small{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+.res-kicker{font-size:12px;font-weight:600;color:var(--purple);letter-spacing:.06em;text-transform:uppercase}
+.res-line{font-size:17px;font-weight:700;line-height:1.3;margin:4px 0 4px;letter-spacing:-.01em}
+.res-ctx{font-size:13px;color:var(--muted)}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--green);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.live::before{content:"";width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px #dcfce7}
+.rows{margin-top:18px;border-top:1px solid #f0f0f0}
+.r{display:grid;grid-template-columns:110px 1fr 74px;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f5f5f5;font-size:13px}
+.r .n{font-weight:600}
+.r .bar{position:relative;height:6px;background:var(--soft);border-radius:4px}
+.r .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--purple);transition:width .4s ease}
+.r .bar u{position:absolute;left:50%;top:-4px;bottom:-4px;width:2px;background:#bdbdbd;border-radius:1px}
+.chip{justify-self:end;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.chip.above{background:var(--green-bg);color:var(--green)}
+.chip.at{background:var(--soft);color:var(--ink-2)}
+.chip.below{background:var(--amber-bg);color:var(--amber)}
+.chip.missing{background:var(--red-bg);color:var(--red)}
+.legend{display:flex;gap:6px;align-items:center;font-size:11px;color:var(--muted);margin-top:8px}
+.legend u{display:inline-block;width:2px;height:10px;background:#bdbdbd}
+.gap{margin-top:16px;background:var(--lav);border-radius:14px;padding:16px}
+.gap .t{font-size:12px;font-weight:700;color:var(--purple-ink);letter-spacing:.06em;text-transform:uppercase}
+.gap .big{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:4px 0 2px}
+.gap .s{font-size:13px;color:var(--ink-2)}
+.gap ul{margin:10px 0 0;padding:0;list-style:none;font-size:13px}
+.gap li{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-top:1px dashed var(--lav-2)}
+.gap li span:last-child{font-weight:600;white-space:nowrap}
+.renew{margin-top:12px;font-size:13px;background:var(--amber-bg);color:#713f12;border-radius:10px;padding:10px 12px;display:none}
+.res .k-submit{margin-top:16px;font-size:16px;padding:16px}
+.optin{margin-top:12px;display:flex;gap:8px}
+.optin .k-input{height:42px}
+.optin button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap}
+.optin-note{font-size:12px;color:var(--muted);margin-top:6px}
+.empty{padding:20px 0 4px;text-align:center;color:var(--muted);font-size:14px}
+
+.minibar{position:fixed;left:12px;right:12px;bottom:12px;z-index:30;display:none;align-items:center;gap:12px;background:#000;color:#fff;border:1px solid rgba(198,198,193,.4);border-radius:12px;padding:12px 16px;text-align:left;cursor:pointer;width:auto}
+.minibar b{font-size:24px;font-weight:600;letter-spacing:-.02em}
+.minibar span{font-size:13px;color:rgba(251,250,242,.7);flex:1}
+.minibar em{font-style:normal;font-size:13px;font-weight:600;color:var(--wash);white-space:nowrap}
+.minibar.show{display:flex}
+@media (min-width:981px){.minibar.show{display:none}}
+
+/* pins */
+.pin{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;flex-shrink:0}
+.pin-float{position:absolute;z-index:2;box-shadow:0 0 0 4px rgba(255,255,255,.9)}
+
+/* modal (before) */
+.modal{position:absolute;inset:0;background:rgba(20,10,40,.35);display:none;align-items:flex-start;justify-content:center;padding:120px 16px;z-index:5}
+.modal.show{display:flex}
+.modal .box{background:#fff;border-radius:18px;padding:28px;max-width:420px;text-align:center;box-shadow:0 30px 60px rgba(0,0,0,.2)}
+.modal .box h4{margin:12px 0 6px;font-size:20px}
+.modal .box p{margin:0;color:var(--muted);font-size:15px}
+.modal .box .note{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line);font-size:13px;color:var(--purple-ink);font-weight:600}
+.modal .box button{margin-top:16px}
+
+/* explain cards under demo */
+.explain{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+.explain .e{display:flex;gap:12px;background:var(--linen);border:1px solid var(--rule);border-radius:12px;padding:24px 22px}
+.explain h5{margin:0 0 6px;font-size:18px;font-weight:600;line-height:1.25}
+.explain p{margin:0;font-size:16px;line-height:22.4px}
+.explain .pin{background:var(--wash);color:var(--violet);border-radius:5px;width:26px;height:26px;font-size:13px;font-weight:600}
+@media (max-width:860px){.explain{grid-template-columns:1fr}}
+
+/* ---------- profit calculator ---------- */
+.calc{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch}
+@media (max-width:860px){.calc{grid-template-columns:1fr}}
+.calc-in{background:var(--linen);border:1px solid var(--rule);border-radius:12px;padding:30px 27px}
+.sl{margin-bottom:22px}
+.sl-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:8px}
+.sl-top label{font-weight:500;font-size:16px}
+.sl-top output,.sl .pair output{font-weight:600;font-variant-numeric:tabular-nums}
+.sl input[type=range]{width:100%;accent-color:var(--violet)}
+.sl .pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.sl .pair small{display:block;font-size:12px;color:var(--pencil);font-weight:600;text-transform:uppercase;margin-bottom:2px}
+.out{background:#fff;border:1px solid var(--frame);border-radius:12px;padding:30px 27px}
+.out .k{font-size:12px;color:var(--pencil);font-weight:600;text-transform:uppercase}
+.out .huge{font-size:clamp(44px,5vw,60px);font-weight:600;line-height:1;margin:10px 0 8px;letter-spacing:-.02em}
+.out .huge span{color:var(--violet)}
+.out .sub{font-size:16px;line-height:24px}
+.funnel{margin-top:28px;display:grid;gap:14px;border-top:1px solid var(--rule);padding-top:24px}
+.fz{display:grid;grid-template-columns:96px 1fr 48px;gap:12px;align-items:center;font-size:14px}
+.fz .tr{height:10px;background:var(--linen);border-radius:5px;overflow:hidden}
+.fz .tr i{display:block;height:100%;border-radius:5px;transition:width .4s ease}
+.fz b{text-align:right;font-variant-numeric:tabular-nums}
+.disclaimer{font-size:14px;line-height:19.6px;color:var(--pencil);margin:4px 0 0}
+
+/* ---------- alternatives ---------- */
+.alts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.alt{background:var(--linen);border:1px solid var(--rule);border-radius:12px;padding:24px 22px;transition:background .2s,transform .2s,border-color .2s}
+.alt:hover{background:#fff;border-color:#ebe2f5;transform:scale(1.01)}
+.alt .tag{display:inline-block;font-size:13px;font-weight:600;padding:4px 6px;border-radius:5px;background:var(--rule);color:var(--pencil)}
+.alt h5{font-size:22px;font-weight:600;margin:14px 0 6px;letter-spacing:-.01em;line-height:1.2}
+.alt p{margin:0;font-size:16px;line-height:22.4px}
+.alt.win{background:#fff;border-color:var(--violet)}
+.alt.win .tag{background:var(--wash);color:var(--violet)}
+@media (max-width:860px){.alts{grid-template-columns:1fr}}
+
+/* ---------- plan: dark timeline band ---------- */
+.timeline{max-width:760px;margin:0 auto;position:relative;padding-left:40px}
+.timeline::before{content:"";position:absolute;left:5px;top:6px;bottom:6px;width:1px;background:linear-gradient(180deg,rgba(251,250,242,0),rgba(251,250,242,.2) 16%,rgba(251,250,242,.2) 84%,rgba(251,250,242,0))}
+.step{position:relative;padding:0 0 44px}
+.step:last-child{padding-bottom:0}
+.step::before{content:"";position:absolute;left:-40px;top:8px;width:11px;height:11px;border-radius:2px;background:var(--chalk)}
+.step .tl-tag{display:inline-block;background:var(--wash);color:var(--violet);font-size:14px;line-height:21px;font-weight:600;padding:4px 6px;border-radius:8px;margin-bottom:12px}
+.step h4{margin:0 0 8px;font-size:28px;line-height:33.6px;font-weight:600;color:var(--chalk)}
+.step p{margin:0;font-size:18px;line-height:27px;color:rgba(251,250,242,.8);max-width:56ch}
+@media (max-width:640px){.step h4{font-size:24px;line-height:30px}.step p{font-size:16px;line-height:24px}}
+
+/* ---------- about ---------- */
+.about{display:grid;grid-template-columns:1.1fr 1fr;gap:16px}
+@media (max-width:860px){.about{grid-template-columns:1fr}}
+.about-card{background:var(--linen);border:1px solid var(--rule);border-radius:12px;padding:32px}
+@media (max-width:640px){.about-card{padding:24px 20px}}
+.about .intro{font-size:24px;line-height:33.6px;font-weight:400;margin:0}
+.about .meta{margin-top:20px;color:var(--pencil);font-size:16px}
+.hl{background:#fff;border:1px solid var(--frame);border-radius:12px;padding:8px 24px}
+.hl div{display:grid;grid-template-columns:96px 1fr;gap:16px;padding:18px 0;border-bottom:1px solid #ebebed}
+.hl div:last-child{border-bottom:0}
+.hl b{font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.2;color:var(--violet)}
+.hl p{margin:0;font-size:16px;line-height:22.4px}
+.links{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
+.ph{background:#fff7cc;border-radius:4px;padding:0 4px}
+
+footer{background:#000;color:var(--chalk);padding:56px 0 48px}
+.foot-row{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap}
+.foot-name{font-size:22px;line-height:27.5px;font-weight:400}
+.foot-name span{color:rgba(251,250,242,.6);font-weight:300}
+.foot-nav{display:flex;gap:24px;flex-wrap:wrap}
+.foot-nav a{color:var(--chalk);text-decoration:none;font-size:16px;line-height:22px}
+.foot-nav a:hover{text-decoration:underline}
+footer .fine{margin-top:40px;padding-top:24px;border-top:1px solid rgba(251,250,242,.2);font-size:12px;line-height:18px;color:rgba(251,250,242,.6);max-width:none}
+</style>
+</head>
+<body>
+
+<div class="announce"><a href="#demo">An application to Kota, built as a product change. Try it below →</a></div>
+<header class="topbar">
+  <div class="nav">
+    <div class="who" id="topName"></div>
+    <nav>
+      <a href="#demo">Try it</a>
+      <a href="#why">The numbers</a>
+      <a href="#ship">How I'd ship it</a>
+      <a href="#me">About me</a>
+    </nav>
+    <a class="btn-nav" href="#me">Talk to me</a>
+  </div>
+</header>
+
+<main>
+<section class="hero">
+  <div class="hero-wash">
+    <div class="hero-sheet">
+      <div class="wrap hero-grid" style="padding:0">
+      <div>
+        <h1>I rebuilt your benchmark and moved <em>one thing</em>: the answer now comes before the email.</h1>
+        <div class="lede">
+          <p>Today, an HR lead answers <strong>about 14 questions</strong>, types their email, and gets nothing on screen. The benchmark, which is the reason they came, shows up later in an inbox with no clear next step.</p>
+          <p>In my version the percentile <strong>updates as they type</strong>, every gap comes with a price, and the main button turns a curious visitor into a <strong>quote request</strong>. The email becomes something they choose to give.</p>
+        </div>
+        <div class="cta-row">
+          <a class="btn btn-violet" href="#demo">Try both versions</a>
+          <a class="btn btn-ghost" href="#me">Skip to who I am</a>
+        </div>
+        <div class="chips">
+          <span class="chip-k"><span>Live percentile</span></span>
+          <span class="chip-k"><span>Priced gaps</span></span>
+          <span class="chip-k"><span>Quote-first CTA</span></span>
+          <span class="chip-k"><span>Optional email</span></span>
+          <span class="chip-k"><span>A/B-ready</span></span>
+        </div>
+      </div>
+      <div class="hero-viz" aria-hidden="true">
+        <i class="dot d-t"></i><i class="dot d-b"></i><i class="dot d-l"></i><i class="dot d-r"></i>
+        <div class="pv">
+          <div class="live">Live benchmark</div>
+          <div class="pv-top"><b>31st</b><span>percentile</span><em>→ 65th</em></div>
+          <ul>
+            <li><span>Add group life · +6 pts</span><span>~€6/emp/mo</span></li>
+            <li><span>Add dental · +5 pts</span><span>~€16/emp/mo</span></li>
+            <li><span>Add income protection · +7 pts</span><span>~€28/emp/mo</span></li>
+          </ul>
+          <div class="q">Get a quote to close the gaps</div>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="demo">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">01 · Try it</div>
+      <h2>Same form. Different order.</h2>
+      <p>This is a working rebuild of benchmark.kota.io/start-benchmarking, filled in with a sample 120-person tech company in Dublin. Switch between the two versions; your inputs carry over. Change anything and watch the right side.</p>
+    </div>
+
+    <div class="switch" role="group" aria-label="Version">
+      <button data-mode="before" aria-pressed="false"><span class="dot"></span>Today: email first</button>
+      <button data-mode="after" aria-pressed="true"><span class="dot"></span>My change: answer first</button>
+    </div>
+
+    <div class="frame">
+      <div class="frame-bar">
+        <div class="lights"><i></i><i></i><i></i></div>
+        <div class="url">benchmark.kota.io/start-benchmarking</div>
+        <div class="tag">Concept rebuild · not an official Kota page</div>
+      </div>
+
+      <div class="kota" id="kota">
+        <div class="k-nav">
+          <div class="k-logo">
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><g stroke="#0a0a0a" stroke-width="2.6" stroke-linecap="round"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/></g></svg>
+            Kota
+          </div>
+          <div class="k-links"><span>Home</span><span class="on">Start Benchmarking</span><span>Get Benefits Inspiration</span></div>
+          <div class="k-sign">Sign In</div>
+        </div>
+        <div class="k-head">
+          <h3>Start Employee Benefits Benchmarking</h3>
+          <p>Benchmark your benefits package against Ireland and UK market data in under two minutes.</p>
+          <div class="ins">Need ideas first? Visit <a href="#demo">Benefits Inspiration</a>.</div>
+        </div>
+
+        <div class="k-body after" id="kbody">
+          <!-- FORM -->
+          <div class="k-card" id="form">
+            <span class="k-label">Region *</span>
+            <div class="k-seg" id="region">
+              <button data-v="IE" aria-pressed="true">🇮🇪 Ireland</button>
+              <button data-v="UK" aria-pressed="false">🇬🇧 United Kingdom</button>
+            </div>
+            <div class="k-row2">
+              <div>
+                <label class="k-label" for="industry">Industry *</label>
+                <select class="k-select" id="industry">
+                  <option>Technology</option><option>Financial Services</option><option>Professional Services</option><option>Healthcare</option><option>Other</option>
+                </select>
+              </div>
+              <div>
+                <label class="k-label" for="emps">Number of Employees *</label>
+                <input class="k-input" id="emps" type="number" min="1" value="120" placeholder="e.g., 150">
+              </div>
+            </div>
+            <div class="k-hr"></div>
+            <h4 class="k-h4">Your Current Benefits</h4>
+            <p class="k-sub">Toggle on the benefits you currently offer</p>
+
+            <div class="k-ben" data-b="hi">
+              <div class="k-ben-top"><span class="k-ben-name">Health Insurance</span><button class="tog" role="switch" aria-label="Health Insurance"></button></div>
+              <div class="k-ben-detail">
+                <div><label for="hiAmt">Amount covered (<span class="cur">€</span>/month per employee)</label><input class="k-input" id="hiAmt" type="number" min="0" value="70"></div>
+                <div><label for="hiDep">Dependants covered</label><select class="k-select" id="hiDep"><option value="0">No</option><option value="1">Yes</option></select></div>
+                <div><label for="hiRen">Renewal month</label><select class="k-select" id="hiRen"></select></div>
+              </div>
+            </div>
+            <div class="k-ben" data-b="pension">
+              <div class="k-ben-top"><span class="k-ben-name">Pension</span><button class="tog" role="switch" aria-label="Pension"></button></div>
+              <div class="k-ben-detail">
+                <div><label for="penEr">Employer minimum %</label><input class="k-input" id="penEr" type="number" min="0" max="20" step="0.5" value="4"></div>
+                <div><label for="penEe">Employee minimum %</label><input class="k-input" id="penEe" type="number" min="0" max="20" step="0.5" value="4"></div>
+              </div>
+            </div>
+            <div class="k-ben" data-b="life">
+              <div class="k-ben-top"><span class="k-ben-name">Group Life</span><button class="tog" role="switch" aria-label="Group Life"></button></div>
+              <div class="k-ben-detail">
+                <div><label for="lifeX">Salary multiple</label><select class="k-select" id="lifeX"><option value="1">1×</option><option value="2">2×</option><option value="3">3×</option><option value="4" selected>4×</option><option value="5">5×</option></select></div>
+              </div>
+            </div>
+            <div class="k-ben" data-b="ip">
+              <div class="k-ben-top"><span class="k-ben-name">Income Protection</span><button class="tog" role="switch" aria-label="Income Protection"></button></div>
+              <div class="k-ben-detail">
+                <div><label for="ipPct">% of salary covered</label><select class="k-select" id="ipPct"><option value="50">50%</option><option value="66">66%</option><option value="75" selected>75%</option></select></div>
+              </div>
+            </div>
+            <div class="k-ben" data-b="dental">
+              <div class="k-ben-top"><span class="k-ben-name">Dental Plan</span><button class="tog" role="switch" aria-label="Dental Plan"></button></div>
+            </div>
+            <div class="k-ben" data-b="wellness">
+              <div class="k-ben-top"><span class="k-ben-name">Spend/Wellness Card</span><button class="tog" role="switch" aria-label="Spend/Wellness Card"></button></div>
+            </div>
+
+            <div class="before-only">
+              <div class="k-hr"></div>
+              <label class="k-label" for="email1">Enter your email address to receive your report</label>
+              <input class="k-input k-email" id="email1" type="email" placeholder="you@company.com">
+              <div class="k-err" id="err1">Email is required to receive your benchmark.</div>
+              <label class="k-check"><input type="checkbox"> I agree to receive other communications, including marketing communications from Kota.</label>
+              <p class="k-fine">By providing your name and email address, you consent to Kota's processing, use, and storage of the provided information in accordance with our <a href="#demo">privacy notice</a>.</p>
+              <button class="k-submit" id="submit1">Get Benchmark Now</button>
+            </div>
+          </div>
+
+          <!-- RESULTS (my change) -->
+          <aside class="res" aria-live="polite">
+            <div class="k-card">
+              <div class="live">Live benchmark</div>
+              <div class="res-top">
+                <div class="ring">
+                  <svg width="112" height="112" viewBox="0 0 112 112"><circle cx="56" cy="56" r="48" fill="none" stroke="#f1ecfe" stroke-width="10"/><circle id="ringArc" cx="56" cy="56" r="48" fill="none" stroke="#7544e9" stroke-width="10" stroke-linecap="round" stroke-dasharray="301.6" stroke-dashoffset="301.6" style="transition:stroke-dashoffset .5s ease"/></svg>
+                  <div class="val"><b id="pctNum">–</b><small>percentile</small></div>
+                </div>
+                <div>
+                  <div class="res-kicker" id="verdictK">Your package</div>
+                  <div class="res-line" id="verdict">…</div>
+                  <div class="res-ctx" id="ctx">…</div>
+                </div>
+              </div>
+              <div class="rows" id="rows"></div>
+              <div class="legend"><u></u> market median</div>
+
+              <div class="gap" id="gapBox">
+                <div class="t">Close the gaps</div>
+                <div class="big" id="gapBig"></div>
+                <div class="s" id="gapSub"></div>
+                <ul id="gapList"></ul>
+              </div>
+              <div class="renew" id="renew"></div>
+
+              <button class="k-submit" id="quoteBtn">Get a quote to close the gaps</button>
+              <div class="optin">
+                <input class="k-input" type="email" placeholder="Email me the full PDF report (optional)" aria-label="Email for PDF report">
+                <button type="button" id="pdfBtn">Send</button>
+              </div>
+              <div class="optin-note" id="pdfNote">Optional. Your results are already on screen.</div>
+            </div>
+          </aside>
+        </div>
+
+        <div class="modal" id="modal">
+          <div class="box">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#7544e9" stroke-width="2"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>
+            <h4>Thanks! Your report is on its way.</h4>
+            <p>Check your inbox for your benchmark.</p>
+            <div class="note">↑ This is where the visitor's session ends today: they put in two minutes and leave with nothing on screen and no next step.</div>
+            <button class="btn btn-ghost" id="closeModal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="explain" id="explain"></div>
+    <button class="minibar" id="minibar" type="button"><b id="miniPct">–</b><span>percentile · live while you edit</span><em>See gaps ↓</em></button>
+  </div>
+</section>
+
+<section class="block" id="why">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">02 · The numbers</div>
+      <h2>Why this, and not something else</h2>
+      <p>Kota earns money when a company puts its benefits through Kota. The benchmark exists to start that conversation, so the change I'd make is the one that gets more visitors to ask for a quote, not the one that collects the most emails.</p>
+    </div>
+
+    <div class="calc">
+      <div class="calc-in">
+        <div class="sl">
+          <div class="sl-top"><label for="cVis">Visitors who start the benchmark / month</label><output id="oVis"></output></div>
+          <input type="range" id="cVis" min="200" max="10000" step="100" value="1000">
+        </div>
+        <div class="sl">
+          <div class="sl-top"><label>Visitors who become a lead</label></div>
+          <div class="pair">
+            <div><small>Today (email)</small><input type="range" id="cL0" min="2" max="40" value="10"><output id="oL0"></output></div>
+            <div><small>Mine</small><input type="range" id="cL1" min="2" max="60" value="18"><output id="oL1"></output></div>
+          </div>
+        </div>
+        <div class="sl">
+          <div class="sl-top"><label>Leads who become customers</label></div>
+          <div class="pair">
+            <div><small>Today</small><input type="range" id="cC0" min="1" max="20" step="0.5" value="4"><output id="oC0"></output></div>
+            <div><small>Mine</small><input type="range" id="cC1" min="1" max="20" step="0.5" value="5"><output id="oC1"></output></div>
+          </div>
+        </div>
+        <div class="sl">
+          <div class="sl-top"><label for="cAcv">First-year revenue per new customer</label><output id="oAcv"></output></div>
+          <input type="range" id="cAcv" min="1000" max="30000" step="500" value="4000">
+        </div>
+        <p class="disclaimer">Every default here is my own cautious guess, not Kota data. Drag in your real numbers; the logic is simple: visitors × lead rate × close rate × revenue.</p>
+      </div>
+      <div class="out">
+        <div class="k">Extra first-year revenue, per year</div>
+        <div class="huge" id="oGain">€0</div>
+        <div class="sub" id="oGainSub"></div>
+        <div class="funnel">
+          <div class="fz"><span>Leads today</span><div class="tr"><i id="fL0" style="background:var(--pebble)"></i></div><b id="nL0"></b></div>
+          <div class="fz"><span>Leads mine</span><div class="tr"><i id="fL1" style="background:var(--violet)"></i></div><b id="nL1"></b></div>
+          <div class="fz"><span>Clients today</span><div class="tr"><i id="fC0" style="background:var(--pebble)"></i></div><b id="nC0"></b></div>
+          <div class="fz"><span>Clients mine</span><div class="tr"><i id="fC1" style="background:var(--violet)"></i></div><b id="nC1"></b></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <div class="alts">
+        <div class="alt">
+          <div class="tag">Considered</div>
+          <h5>Cut the form down</h5>
+          <p>Fewer fields would lift completion, but a thinner benchmark is less useful to the user and gives Kota less to quote from. The questions are fine. Making people wait for the answer is the problem.</p>
+        </div>
+        <div class="alt">
+          <div class="tag">Considered</div>
+          <h5>Visual polish on the report email</h5>
+          <p>A better email still arrives after the visitor has left. The best moment to show them their result is while they're on the page and paying attention.</p>
+        </div>
+        <div class="alt win">
+          <div class="tag">Chosen</div>
+          <h5>Answer first, price every gap</h5>
+          <p>One layout change, built on the data and form Kota already has. It fixes the drop-off at the email field and gives the visitor a clear next step: ask for a quote.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block dark" id="ship">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">03 · How I'd ship it</div>
+      <h2>Shipped as a test, not a bet on the funnel.</h2>
+      <p>The risk is that fewer people hand over their email. So I'd run it as a test and judge it on quote requests, the number that turns into revenue.</p>
+    </div>
+    <div class="timeline">
+      <div class="step"><span class="tl-tag">Week 1</span><h4>Show the live panel to 50% of visitors</h4><p>Reuse the existing scoring logic on the client side, with no new data needed.</p></div>
+      <div class="step"><span class="tl-tag">Primary metric</span><h4>Quote requests per visitor</h4><p>Counted per visitor who starts the form. Secondary metrics: form completion and time to first result.</p></div>
+      <div class="step"><span class="tl-tag">Guardrail</span><h4>Contactable leads must not fall</h4><p>Email plus quote requests per visitor. If that number drops, put only the gap pricing behind the email.</p></div>
+      <div class="step"><span class="tl-tag">Week 3–4</span><h4>Read the result, then send gap data to sales</h4><p>"Your renewal is in March and dental is your biggest gap" makes a much better first call.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="me">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">04 · About me</div>
+      <h2>Who built this.</h2>
+      <p>The short version of who built this and why I want to build the real thing with you.</p>
+    </div>
+    <div class="about">
+      <div class="about-card">
+        <p class="intro" id="pIntro"></p>
+        <div class="meta" id="pMeta"></div>
+        <div class="links" id="pLinks"></div>
+      </div>
+      <div class="hl" id="pHl"></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-row">
+      <div class="foot-name" id="fName"></div>
+      <nav class="foot-nav">
+        <a href="#demo">Try it</a>
+        <a href="#why">The numbers</a>
+        <a href="#ship">How I'd ship it</a>
+        <a href="#me">About me</a>
+      </nav>
+    </div>
+    <p class="fine">This page is an independent concept made for a job application. It is not affiliated with or endorsed by Kota (Yonder Technology Limited). Market figures in the demo are illustrative placeholders, not Kota benchmark data.</p>
+  </div>
+</footer>
+
+<script>
+/* ============ EDIT ME: your details ============ */
+const PROFILE = {
+  name: "Sascha Thiele",
+  role: "Design Engineer · UX/UI & AI",
+  location: "Leipzig, Germany · German native, English fluent",
+  intro: "I design digital products and build the code and AI behind them. After six years of UX/UI work for Mercedes-Benz, Deutsche Bahn, Amazon and Samsung, I now take ideas from data pipeline to interface myself, just as I did with this page.",
+  highlights: [
+    { k: "6 yrs", v: "UX/UI design at Appsfactory and Syndikat7 for Mercedes-Benz, Deutsche Bahn, Amazon, Samsung and tagesschau, including the MBUX head unit component library." },
+    { k: "200+", v: "Active TestFlight users of Hane, my own Japanese-learning iOS app, which I designed and built end to end: Python data pipeline, SwiftUI and StoreKit 2." },
+    { k: "RAG", v: "Readr, an agentic reading assistant built with LangGraph, ChromaDB, FastAPI and React. It rewrites its own query when retrieval is weak instead of making up an answer." },
+    { k: "Calc", v: "For Packshack I built a pricing calculator in place of a sales pitch, so users worked out their own numbers. This application uses the same idea." }
+  ],
+  links: [
+    { label: "sascha.thiele@pm.me", href: "mailto:sascha.thiele@pm.me", primary: true },
+    { label: "+49 173 6 555 930", href: "tel:+491736555930" },
+    { label: "hane-app.com", href: "https://hane-app.com" }
+  ]
+};
+/* =============================================== */
+
+const ph = s => s.replace(/\[([^\]]+)\]/g, '<span class="ph">[$1]</span>');
+document.getElementById('topName').innerHTML = `${PROFILE.name} <span>· application to Kota</span>`;
+document.getElementById('pIntro').innerHTML = ph(PROFILE.intro);
+document.getElementById('pMeta').innerHTML = ph(`<strong style="color:var(--ink)">${PROFILE.name}</strong> · ${PROFILE.role}<br>${PROFILE.location}`);
+document.getElementById('pHl').innerHTML = PROFILE.highlights.map(h => `<div><b>${ph(h.k)}</b><p>${ph(h.v)}</p></div>`).join('');
+const linkHtml = PROFILE.links.map(l => `<a class="btn ${l.primary ? 'btn-violet' : 'btn-ghost'}" href="${l.href}">${l.label}</a>`).join('');
+document.getElementById('pLinks').innerHTML = linkHtml;
+document.getElementById('fName').innerHTML = `${PROFILE.name} <span>· ${PROFILE.role}</span>`;
+
+// in-page links: scroll in JS so they also work in previews/hosts where hash navigation is blocked
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[href^="#"]');
+  if (!a) return;
+  const target = document.getElementById(a.getAttribute('href').slice(1));
+  if (!target) return;
+  e.preventDefault();
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+/* ============ benchmark model (illustrative) ============ */
+const MARKET = {
+  IE: { cur: "€", salary: 55000, hi: { prev: .82, med: 95, sd: 35 }, pension: { prev: .78, med: 5, sd: 2 }, life: { prev: .70, med: 4, sd: 1 }, ip: { prev: .55, med: 75, sd: 9 }, dental: { prev: .42 }, wellness: { prev: .32 } },
+  UK: { cur: "£", salary: 48000, hi: { prev: .62, med: 80, sd: 30 }, pension: { prev: .97, med: 5, sd: 2 }, life: { prev: .66, med: 4, sd: 1 }, ip: { prev: .40, med: 70, sd: 9 }, dental: { prev: .36 }, wellness: { prev: .30 } }
+};
+const IND = { "Technology": 1.05, "Financial Services": 1.1, "Professional Services": 1, "Healthcare": .95, "Other": .9 };
+const NAMES = { hi: "Health", pension: "Pension", life: "Group life", ip: "Income prot.", dental: "Dental", wellness: "Wellness card" };
+const WEIGHT = { hi: .28, pension: .24, life: .12, ip: .14, dental: .10, wellness: .12 };
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+const state = { region: "IE", on: { hi: true, pension: true, life: false, ip: false, dental: false, wellness: false } };
+const $ = id => document.getElementById(id);
+const renSel = $('hiRen');
+renSel.innerHTML = MONTHS.map((m, i) => `<option value="${i}">${m}</option>`).join('');
+renSel.value = String((new Date().getMonth() + 2) % 12);
+
+const phi = z => 1 / (1 + Math.exp(-1.702 * z));
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+function marketFor() {
+  const m = MARKET[state.region], k = IND[$('industry').value] || 1;
+  const n = +$('emps').value || 0, sz = n < 50 ? .85 : n < 250 ? 1 : 1.1;
+  const out = {};
+  for (const b in WEIGHT) out[b] = { ...m[b], prev: clamp(m[b].prev * k * sz, .05, .98) };
+  return { m, b: out };
+}
+function valueOf(b) {
+  return { hi: +$('hiAmt').value, pension: +$('penEr').value, life: +$('lifeX').value, ip: +$('ipPct').value }[b];
+}
+function pctFor(mk, offered, v) {
+  if (!offered) return (1 - mk.prev) * 50;
+  if (mk.med == null) return (1 - mk.prev) * 100 + mk.prev * 50;
+  return (1 - mk.prev) * 100 + mk.prev * 100 * phi((v - mk.med) / mk.sd);
+}
+function score(on, vals, bm) {
+  let s = 0; const per = {};
+  for (const b in WEIGHT) { per[b] = clamp(pctFor(bm[b], on[b], vals[b]), 1, 99); s += per[b] * WEIGHT[b]; }
+  return { overall: Math.round(clamp(s, 1, 99)), per };
+}
+function costToMedian(b, on, v, m, bm) {
+  const perPct = m.salary / 12 / 100;
+  switch (b) {
+    case "hi": return on ? Math.max(0, bm.hi.med - v) : bm.hi.med;
+    case "pension": return Math.max(0, bm.pension.med - (on ? v : 0)) * perPct;
+    case "life": return Math.max(0, bm.life.med - (on ? v : 0)) * 1.6;
+    case "ip": return on ? (v < bm.ip.med ? 6 : 0) : 28;
+    case "dental": return on ? 0 : 16;
+    case "wellness": return on ? 0 : 40;
+  }
+}
+const fmt = (n, cur) => cur + Math.round(n).toLocaleString('en-IE');
+const ord = n => n + (["th","st","nd","rd"][(n % 100 - 20) % 10] || ["th","st","nd","rd"][n % 100] || "th");
+
+function render() {
+  const { m, b: bm } = marketFor();
+  document.querySelectorAll('.cur').forEach(e => e.textContent = m.cur);
+  const vals = {}; for (const b in WEIGHT) vals[b] = valueOf(b);
+  const now = score(state.on, vals, bm);
+
+  $('pctNum').textContent = now.overall;
+  $('miniPct').textContent = ord(now.overall);
+  $('ringArc').style.strokeDashoffset = 301.6 * (1 - now.overall / 100);
+  $('verdict').textContent = now.overall >= 66 ? "Ahead of most of the market" : now.overall >= 40 ? "Roughly in line with the market" : "Behind most of the market";
+  const n = +$('emps').value || 0;
+  $('ctx').textContent = `vs ${$('industry').value} · ${state.region === "IE" ? "Ireland" : "UK"} · ${n < 50 ? "under 50" : n < 250 ? "50–249" : "250+"} employees`;
+
+  const order = Object.keys(WEIGHT).sort((a, b) => now.per[a] - now.per[b]);
+  $('rows').innerHTML = order.map(b => {
+    const p = Math.round(now.per[b]);
+    const st = !state.on[b] ? "missing" : p < 40 ? "below" : p <= 65 ? "at" : "above";
+    const lab = { missing: "Missing", below: "Below", at: "At market", above: "Above" }[st];
+    return `<div class="r"><span class="n">${NAMES[b]}</span><span class="bar"><i style="width:${p}%"></i><u></u></span><span class="chip ${st}">${lab}</span></div>`;
+  }).join('');
+
+  // gaps: bring each benefit to median, show percentile uplift + monthly cost
+  const gaps = [];
+  for (const b in WEIGHT) {
+    const c = costToMedian(b, state.on[b], vals[b], m, bm);
+    if (c <= 0.5) continue;
+    const on2 = { ...state.on, [b]: true }, v2 = { ...vals, [b]: Math.max(vals[b] || 0, bm[b].med ?? 0) };
+    const lift = score(on2, v2, bm).overall - now.overall;
+    if (lift > 0) gaps.push({ b, c, lift });
+  }
+  gaps.sort((a, b) => b.lift / b.c - a.lift / a.c);
+  if (gaps.length) {
+    const onAll = {}, vAll = {};
+    for (const b in WEIGHT) { onAll[b] = true; vAll[b] = Math.max(vals[b] || 0, bm[b].med ?? 0); }
+    const target = score(onAll, vAll, bm).overall;
+    const total = gaps.reduce((s, g) => s + g.c, 0);
+    $('gapBig').textContent = `${ord(now.overall)} → ${ord(target)} percentile`;
+    $('gapSub').textContent = `for about ${fmt(total, m.cur)} per employee / month${n ? ` (~${fmt(total * n, m.cur)} / month in total)` : ""}. Best value first:`;
+    $('gapList').innerHTML = gaps.slice(0, 3).map(g => `<li><span>${state.on[g.b] ? "Top up" : "Add"} ${NAMES[g.b].toLowerCase()} · +${g.lift} pts</span><span>~${fmt(g.c, m.cur)}/emp/mo</span></li>`).join('');
+    $('gapBox').style.display = '';
+    $('quoteBtn').textContent = "Get a quote to close the gaps";
+  } else {
+    $('gapBox').style.display = 'none';
+    $('quoteBtn').textContent = "Get a quote, and keep this for less";
+  }
+
+  const r = $('renew');
+  if (state.on.hi) {
+    const months = (+renSel.value - new Date().getMonth() + 12) % 12;
+    r.style.display = months <= 3 ? 'block' : 'none';
+    r.textContent = `Your health insurance renews in ${MONTHS[+renSel.value]}. Quotes take about 6 weeks, so now is the time to compare.`;
+  } else r.style.display = 'none';
+}
+
+// wire up form
+document.querySelectorAll('.k-ben').forEach(row => {
+  const b = row.dataset.b, t = row.querySelector('.tog');
+  const sync = () => { t.setAttribute('aria-checked', state.on[b]); row.classList.toggle('open', state.on[b]); };
+  t.addEventListener('click', () => { state.on[b] = !state.on[b]; sync(); render(); });
+  sync();
+});
+document.querySelectorAll('#region button').forEach(btn => btn.addEventListener('click', () => {
+  state.region = btn.dataset.v;
+  document.querySelectorAll('#region button').forEach(x => x.setAttribute('aria-pressed', x === btn));
+  render();
+}));
+$('form').addEventListener('input', render);
+$('form').addEventListener('change', render);
+
+// before: email gate
+$('submit1').addEventListener('click', () => {
+  const ok = /.+@.+\..+/.test($('email1').value);
+  $('err1').style.display = ok ? 'none' : 'block';
+  if (ok) $('modal').classList.add('show');
+});
+$('closeModal').addEventListener('click', () => $('modal').classList.remove('show'));
+$('quoteBtn').addEventListener('click', () => { $('quoteBtn').textContent = "✓ Quote requested. A Kota advisor gets your gaps, not a blank form."; });
+$('pdfBtn').addEventListener('click', () => { $('pdfNote').textContent = "✓ In production, the PDF would be sent here. (Nothing is sent in this demo.)"; });
+
+// mode switch + explanation
+const EXPLAIN = {
+  before: [
+    ["14 inputs before any value", "Region, industry, headcount, six benefits and their details, then an email field and a consent box. All of that effort comes before the visitor sees anything."],
+    ["The email is the toll gate", "The visitor can't see their result without handing over an address. That's where people with low intent leave, and some who stay type a throwaway email."],
+    ["The answer arrives off-site", "The result lands in an inbox later, away from the product and with no button that leads to talking to Kota."]
+  ],
+  after: [
+    ["Live percentile", "The score updates as each benefit is toggled. Visitors learn something from every answer, which keeps them filling in the form."],
+    ["Every gap has a price", "Instead of just \"below market\", they see \"dental: +6 points for about €16 per employee per month\". That's a budget conversation Kota can quote on."],
+    ["Quote first, email optional", "The main button asks for a quote request, which is a stronger signal than an email. The PDF stays available for people who want to share it internally."]
+  ]
+};
+function setMode(mode) {
+  $('kbody').classList.toggle('after', mode === 'after');
+  $('modal').classList.remove('show');
+  document.querySelectorAll('.switch button').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === mode));
+  $('explain').innerHTML = EXPLAIN[mode].map(([h, p], i) => `<div class="e"><span class="pin" style="${mode === 'after' ? 'background:var(--violet);color:#fff' : 'background:var(--rule);color:var(--pencil)'}">${i + 1}</span><div><h5>${h}</h5><p>${p}</p></div></div>`).join('');
+}
+document.querySelectorAll('.switch button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+setMode('after');
+render();
+
+// small screens: results sit below the form, so keep the score visible while editing
+const seen = { form: false, res: false };
+function syncMini() {
+  const after = $('kbody').classList.contains('after');
+  $('minibar').classList.toggle('show', after && seen.form && !seen.res);
+}
+new IntersectionObserver(es => {
+  es.forEach(e => { seen[e.target.id === 'form' ? 'form' : 'res'] = e.isIntersecting; });
+  syncMini();
+}).observe($('form'));
+new IntersectionObserver(es => { seen.res = es[0].isIntersecting; syncMini(); }).observe(document.querySelector('.res'));
+document.querySelectorAll('.switch button').forEach(b => b.addEventListener('click', syncMini));
+$('minibar').addEventListener('click', () => document.querySelector('.res').scrollIntoView({ block: 'start' }));
+
+/* ============ profit calculator ============ */
+const C = ['cVis','cL0','cL1','cC0','cC1','cAcv'];
+function calc() {
+  const v = +$('cVis').value, l0 = $('cL0').value / 100, l1 = $('cL1').value / 100, c0 = $('cC0').value / 100, c1 = $('cC1').value / 100, acv = +$('cAcv').value;
+  $('oVis').textContent = v.toLocaleString('en-IE');
+  $('oL0').textContent = Math.round(l0 * 100) + '%'; $('oL1').textContent = Math.round(l1 * 100) + '%';
+  $('oC0').textContent = (c0 * 100).toFixed(1).replace('.0','') + '%'; $('oC1').textContent = (c1 * 100).toFixed(1).replace('.0','') + '%';
+  $('oAcv').textContent = '€' + acv.toLocaleString('en-IE');
+  const L0 = v * l0, L1 = v * l1, K0 = L0 * c0, K1 = L1 * c1;
+  const gain = (K1 - K0) * 12 * acv;
+  $('oGain').innerHTML = (gain < 0 ? '−' : '+') + '<span>€' + Math.abs(Math.round(gain)).toLocaleString('en-IE') + '</span>';
+  $('oGainSub').textContent = `${(K1 - K0 >= 0 ? '+' : '')}${(K1 - K0).toFixed(1)} new clients a month (${K0.toFixed(1)} → ${K1.toFixed(1)}), from the same traffic.`;
+  const maxL = Math.max(L0, L1, 1), maxK = Math.max(K0, K1, .01);
+  $('fL0').style.width = (L0 / maxL * 100) + '%'; $('fL1').style.width = (L1 / maxL * 100) + '%';
+  $('fC0').style.width = (K0 / maxK * 100) + '%'; $('fC1').style.width = (K1 / maxK * 100) + '%';
+  $('nL0').textContent = Math.round(L0); $('nL1').textContent = Math.round(L1);
+  $('nC0').textContent = K0.toFixed(1); $('nC1').textContent = K1.toFixed(1);
+}
+C.forEach(id => $(id).addEventListener('input', calc));
+calc();
+</script>
+</body>
+</html>
