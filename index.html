@@ -4,7 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Answer Before Email — an application to Kota</title>
-<meta name="description" content="A rebuilt Kota benefits benchmark with one change: the result arrives before the email. An interactive application.">
+<meta name="description" content="A rebuilt Kota benefits benchmark with one change: the result arrives before the email. An interactive application."><meta property="og:type" content="website">
+<meta property="og:url" content="https://sthix.github.io/Kota-Application/">
+<meta property="og:title" content="I rebuilt Kota's benchmark and moved one thing">
+<meta property="og:description" content="The answer now comes before the email: a live percentile, priced gaps and a quote-first CTA. An interactive application by Sascha Thiele.">
+<meta property="og:image" content="https://sthix.github.io/Kota-Application/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Headline: I rebuilt your benchmark and moved one thing, next to a live benchmark card showing 31st to 65th percentile.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="I rebuilt Kota's benchmark and moved one thing">
+<meta name="twitter:description" content="The answer now comes before the email. An interactive application by Sascha Thiele.">
+<meta name="twitter:image" content="https://sthix.github.io/Kota-Application/og.png">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%237546d5'/%3E%3Cg fill='%23fff'%3E%3Crect x='8' y='17' width='4' height='7' rx='1'/%3E%3Crect x='14' y='12' width='4' height='12' rx='1'/%3E%3Crect x='20' y='8' width='4' height='16' rx='1'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -107,13 +119,14 @@ section.dark .sec-head p{color:rgba(251,250,242,.8)}
 @media (max-width:480px){.switch button{padding:9px 10px;font-size:14px}}
 
 /* browser frame: product screenshot on paper */
-.frame{border:1px solid var(--frame);border-radius:10px;overflow:hidden;background:#fff}
+.frame{border:1px solid var(--frame);border-radius:10px;overflow:clip;background:#fff}
 .frame-bar{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--linen);border-bottom:1px solid var(--rule)}
 .frame-bar .lights{display:flex;gap:6px}
 .frame-bar .lights i{width:10px;height:10px;border-radius:50%;background:var(--rule);display:block}
 .frame-bar .url{flex:1;min-width:0;background:#fff;border:1px solid var(--rule);border-radius:8px;padding:5px 10px;font-size:13px;color:var(--pencil);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .frame-bar .tag{font-size:13px;font-weight:600;color:var(--violet);background:var(--wash);padding:4px 8px;border-radius:5px;white-space:nowrap}
-@media (max-width:520px){.frame-bar .tag{display:none}}
+.frame-bar .tag .short{display:none}
+@media (max-width:520px){.frame-bar .tag .long{display:none}.frame-bar .tag .short{display:inline}.frame-bar .lights{display:none}}
 
 /* ---------- Kota recreation ---------- */
 .kota{background:linear-gradient(180deg,#f3eefe 0,#fbf9ff 340px,#fff 620px);padding:0 0 56px;position:relative}
@@ -171,7 +184,11 @@ section.dark .sec-head p{color:rgba(251,250,242,.8)}
 .k-body.after .before-only{display:none}
 
 /* results panel (my change) */
-.res{display:none;align-self:start;position:sticky;top:76px}
+.res{display:none;align-self:start}
+/* the panel is as tall as the form, so pin its score summary rather than the whole card */
+.res-sum{position:sticky;top:96px;z-index:2;background:#fff;margin:-22px -22px 0;padding:22px 22px 14px;border-radius:18px 18px 0 0;border-bottom:1px solid #f0f0f0}
+.res-sum::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:28px;background:#fff}
+.res-sum + .rows{border-top:0}
 .k-body.after .res{display:block;animation:rise .45s ease}
 @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @media (max-width:980px){.res{position:static}}
@@ -256,6 +273,18 @@ section.dark .sec-head p{color:rgba(251,250,242,.8)}
 .sl .pair small{display:block;font-size:12px;color:var(--pencil);font-weight:600;text-transform:uppercase;margin-bottom:2px}
 .out{background:#fff;border:1px solid var(--frame);border-radius:12px;padding:30px 27px}
 .out .k{font-size:12px;color:var(--pencil);font-weight:600;text-transform:uppercase}
+.out-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.illus{font-size:13px;font-weight:600;color:var(--pencil);background:var(--rule);padding:4px 8px;border-radius:5px;white-space:nowrap}
+.sub-head{margin:72px 0 24px;max-width:640px}
+.sub-head h3{font-size:28px;line-height:33.6px;font-weight:600;margin:0 0 8px}
+.sub-head p{margin:0;font-size:18px;line-height:27px}
+.calc-live{display:none}
+@media (max-width:860px){
+  .calc-live{display:flex;justify-content:space-between;align-items:baseline;gap:12px;position:sticky;top:92px;z-index:2;margin:-30px -27px 20px;padding:14px 27px;background:#fff;border-bottom:1px solid var(--rule);border-radius:12px 12px 0 0}
+  .calc-live span{font-size:14px;color:var(--pencil)}
+  .calc-live b{font-size:22px;font-weight:600;color:var(--violet);font-variant-numeric:tabular-nums}
+}
+@media (max-width:640px){.calc-live{top:86px}}
 .out .huge{font-size:clamp(44px,5vw,60px);font-weight:600;line-height:1;margin:10px 0 8px;letter-spacing:-.02em}
 .out .huge span{color:var(--violet)}
 .out .sub{font-size:16px;line-height:24px}
@@ -321,7 +350,7 @@ footer .fine{margin-top:40px;padding-top:24px;border-top:1px solid rgba(251,250,
     <div class="who" id="topName"></div>
     <nav>
       <a href="#demo">Try it</a>
-      <a href="#why">The numbers</a>
+      <a href="#why">The thinking</a>
       <a href="#ship">How I'd ship it</a>
       <a href="#me">About me</a>
     </nav>
@@ -387,7 +416,7 @@ footer .fine{margin-top:40px;padding-top:24px;border-top:1px solid rgba(251,250,
       <div class="frame-bar">
         <div class="lights"><i></i><i></i><i></i></div>
         <div class="url">benchmark.kota.io/start-benchmarking</div>
-        <div class="tag">Concept rebuild · not an official Kota page</div>
+        <div class="tag"><span class="long">Concept rebuild · not an official Kota page</span><span class="short">Concept · not official</span></div>
       </div>
 
       <div class="kota" id="kota">
@@ -477,6 +506,7 @@ footer .fine{margin-top:40px;padding-top:24px;border-top:1px solid rgba(251,250,
           <!-- RESULTS (my change) -->
           <aside class="res" aria-live="polite">
             <div class="k-card">
+              <div class="res-sum">
               <div class="live">Live benchmark</div>
               <div class="res-top">
                 <div class="ring">
@@ -488,6 +518,7 @@ footer .fine{margin-top:40px;padding-top:24px;border-top:1px solid rgba(251,250,
                   <div class="res-line" id="verdict">…</div>
                   <div class="res-ctx" id="ctx">…</div>
                 </div>
+              </div>
               </div>
               <div class="rows" id="rows"></div>
               <div class="legend"><u></u> market median</div>
@@ -530,13 +561,37 @@ footer .fine{margin-top:40px;padding-top:24px;border-top:1px solid rgba(251,250,
 <section class="block" id="why">
   <div class="wrap">
     <div class="sec-head">
-      <div class="eyebrow">02 · The numbers</div>
+      <div class="eyebrow">02 · The thinking</div>
       <h2>Why this, and not something else</h2>
       <p>Kota earns money when a company puts its benefits through Kota. The benchmark exists to start that conversation, so the change I'd make is the one that gets more visitors to ask for a quote, not the one that collects the most emails.</p>
     </div>
 
+      <div class="alts">
+        <div class="alt">
+          <div class="tag">Considered</div>
+          <h5>Cut the form down</h5>
+          <p>Fewer fields would lift completion, but a thinner benchmark is less useful to the user and gives Kota less to quote from. The questions are fine. Making people wait for the answer is the problem.</p>
+        </div>
+        <div class="alt">
+          <div class="tag">Considered</div>
+          <h5>Visual polish on the report email</h5>
+          <p>A better email still arrives after the visitor has left. The best moment to show them their result is while they're on the page and paying attention.</p>
+        </div>
+        <div class="alt win">
+          <div class="tag">Chosen</div>
+          <h5>Answer first, price every gap</h5>
+          <p>One layout change, built on the data and form Kota already has. It fixes the drop-off at the email field and gives the visitor a clear next step: ask for a quote.</p>
+        </div>
+      </div>
+
+    <div class="sub-head">
+      <h3>What it could be worth</h3>
+      <p>A rough model, not a forecast. Drag in your real numbers.</p>
+    </div>
+
     <div class="calc">
       <div class="calc-in">
+        <div class="calc-live" aria-hidden="true"><span>Added revenue / year</span><b id="oGainMini">+€0</b></div>
         <div class="sl">
           <div class="sl-top"><label for="cVis">Visitors who start the benchmark / month</label><output id="oVis"></output></div>
           <input type="range" id="cVis" min="200" max="10000" step="100" value="1000">
@@ -562,7 +617,7 @@ footer .fine{margin-top:40px;padding-top:24px;border-top:1px solid rgba(251,250,
         <p class="disclaimer">Every default here is my own cautious guess, not Kota data. Drag in your real numbers; the logic is simple: visitors × lead rate × close rate × revenue.</p>
       </div>
       <div class="out">
-        <div class="k">Extra first-year revenue, per year</div>
+        <div class="out-top"><div class="k">Added revenue per year</div><span class="illus">Illustrative · my assumptions</span></div>
         <div class="huge" id="oGain">€0</div>
         <div class="sub" id="oGainSub"></div>
         <div class="funnel">
@@ -570,26 +625,6 @@ footer .fine{margin-top:40px;padding-top:24px;border-top:1px solid rgba(251,250,
           <div class="fz"><span>Leads mine</span><div class="tr"><i id="fL1" style="background:var(--violet)"></i></div><b id="nL1"></b></div>
           <div class="fz"><span>Clients today</span><div class="tr"><i id="fC0" style="background:var(--pebble)"></i></div><b id="nC0"></b></div>
           <div class="fz"><span>Clients mine</span><div class="tr"><i id="fC1" style="background:var(--violet)"></i></div><b id="nC1"></b></div>
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-top:16px">
-      <div class="alts">
-        <div class="alt">
-          <div class="tag">Considered</div>
-          <h5>Cut the form down</h5>
-          <p>Fewer fields would lift completion, but a thinner benchmark is less useful to the user and gives Kota less to quote from. The questions are fine. Making people wait for the answer is the problem.</p>
-        </div>
-        <div class="alt">
-          <div class="tag">Considered</div>
-          <h5>Visual polish on the report email</h5>
-          <p>A better email still arrives after the visitor has left. The best moment to show them their result is while they're on the page and paying attention.</p>
-        </div>
-        <div class="alt win">
-          <div class="tag">Chosen</div>
-          <h5>Answer first, price every gap</h5>
-          <p>One layout change, built on the data and form Kota already has. It fixes the drop-off at the email field and gives the visitor a clear next step: ask for a quote.</p>
         </div>
       </div>
     </div>
@@ -637,7 +672,7 @@ footer .fine{margin-top:40px;padding-top:24px;border-top:1px solid rgba(251,250,
       <div class="foot-name" id="fName"></div>
       <nav class="foot-nav">
         <a href="#demo">Try it</a>
-        <a href="#why">The numbers</a>
+        <a href="#why">The thinking</a>
         <a href="#ship">How I'd ship it</a>
         <a href="#me">About me</a>
       </nav>
@@ -843,10 +878,14 @@ render();
 
 // small screens: results sit below the form, so keep the score visible while editing
 const seen = { form: false, res: false };
+let typing = false;
 function syncMini() {
   const after = $('kbody').classList.contains('after');
-  $('minibar').classList.toggle('show', after && seen.form && !seen.res);
+  $('minibar').classList.toggle('show', after && seen.form && !seen.res && !typing);
 }
+// hide the bar while a text field or select has focus, so it never covers what's being edited
+$('form').addEventListener('focusin', e => { if (e.target.matches('input, select')) { typing = true; syncMini(); } });
+$('form').addEventListener('focusout', () => { typing = false; syncMini(); });
 new IntersectionObserver(es => {
   es.forEach(e => { seen[e.target.id === 'form' ? 'form' : 'res'] = e.isIntersecting; });
   syncMini();
@@ -866,6 +905,7 @@ function calc() {
   const L0 = v * l0, L1 = v * l1, K0 = L0 * c0, K1 = L1 * c1;
   const gain = (K1 - K0) * 12 * acv;
   $('oGain').innerHTML = (gain < 0 ? '−' : '+') + '<span>€' + Math.abs(Math.round(gain)).toLocaleString('en-IE') + '</span>';
+  $('oGainMini').textContent = (gain < 0 ? '−' : '+') + '€' + Math.abs(Math.round(gain)).toLocaleString('en-IE');
   $('oGainSub').textContent = `${(K1 - K0 >= 0 ? '+' : '')}${(K1 - K0).toFixed(1)} new clients a month (${K0.toFixed(1)} → ${K1.toFixed(1)}), from the same traffic.`;
   const maxL = Math.max(L0, L1, 1), maxK = Math.max(K0, K1, .01);
   $('fL0').style.width = (L0 / maxL * 100) + '%'; $('fL1').style.width = (L1 / maxL * 100) + '%';
